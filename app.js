@@ -43,9 +43,20 @@ app.get("/login",(req,res)=>{
     res.render("login")
 })
 
-app.get("/profile",isLoggedIn,(req,res)=>{
-    res.render("profile")
-})
+app.get("/profile",isLoggedIn, async(req,res)=>{
+    let user  = await userModel.findOne({email: req.user.email});
+    res.render("profile", {user});
+});
+
+app.post("/post",isLoggedIn, async(req,res)=>{
+    let user  = await userModel.findOne({email: req.user.email});
+    let {content} = req.body;
+
+    postModel.create({
+        user: user._id,
+        content,
+    })
+});
 
 app.post("/login", async (req, res) => {
     let {email, password } = req.body;
@@ -71,13 +82,20 @@ app.get("/logout",(req,res)=>{
 })
 
 
-function isLoggedIn(req,res,next){
-    if(req.cookies.token === "") res.send("You must be logged in");
-    else {
-        let data = jwt.verify(req.cookies.token, "sssshh")
-        req.user = data
+function isLoggedIn(req, res, next) {
+    const token = req.cookies.token;
+
+    if (!token) {
+        return res.status(401).send("You must be logged in");
     }
-    next();
+
+    try {
+        const data = jwt.verify(token, "sssshh");
+        req.user = data;
+        next(); // ✅ Only call next() if verification succeeds
+    } catch (err) {
+        return res.status(401).send("Invalid or expired token");
+    }
 }
 
 app.listen(3000);
