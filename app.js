@@ -44,7 +44,7 @@ app.get("/login",(req,res)=>{
 })
 
 app.get("/profile",isLoggedIn,(req,res)=>{
-    res.render("login")
+    res.render("profile")
 })
 
 app.post("/login", async (req, res) => {
@@ -58,7 +58,7 @@ app.post("/login", async (req, res) => {
             
             let token = jwt.sign({email: email, userid: user._id}, "sssshh");
             res.cookie("token",token);
-            res.status(200).send("You can login")
+            res.redirect("/profile")
             
         } 
         else res.redirect("/login");
