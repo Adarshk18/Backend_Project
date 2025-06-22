@@ -52,10 +52,14 @@ app.post("/post",isLoggedIn, async(req,res)=>{
     let user  = await userModel.findOne({email: req.user.email});
     let {content} = req.body;
 
-    postModel.create({
+    let post  = postModel.create({
         user: user._id,
         content,
-    })
+    });
+
+    user.posts.push(post._id);
+    await user.save();
+    res.redirect("/profile");
 });
 
 app.post("/login", async (req, res) => {
